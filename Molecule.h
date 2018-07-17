@@ -16,15 +16,17 @@ class Molecule
   {
     private:
       vector<TAtom> atoms;
-      short unsigned int coefficient;
+      float coefficient;
       void analyze_atom(const string& str);
     public:
       Molecule(short unsigned int coefficient, const string& str); //.cc
       ~Molecule(){};
       vector<TAtom> getAtoms() const {return atoms;}
-      short unsigned int getCoeff() const {return coefficient;}
+      float getCoeff() const {return coefficient;}
+      void setCoeff(const float& coeff) {this->coefficient = coeff;}
       int numAtoms(const string&  element) const; //.cc
       unsigned int getNumAtoms() const {return atoms.size();}
+      void print(); //.cc
 
   };
 #endif

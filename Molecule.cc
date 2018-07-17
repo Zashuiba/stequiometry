@@ -1,5 +1,7 @@
 #include "Molecule.h"
 #include <cctype>
+#include <iostream>
+using namespace std;
 
 void Molecule::analyze_atom(const string &str)
   {
@@ -46,4 +48,16 @@ int Molecule::numAtoms(const string& element) const
           return atoms[i].bonds;
       }
     return 0;
+  }
+
+void Molecule::print()
+  {
+    if (this->coefficient != 1)
+      cout << this->coefficient << " ";
+    for (unsigned int i = 0; i < atoms.size(); i++)
+      {
+        cout << atoms[i].elemment;
+        if (atoms[i].bonds != 1)
+          cout << atoms[i].bonds;
+      }
   }

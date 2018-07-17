@@ -1,5 +1,6 @@
 #include "Solver.h"
 #include <cmath>
+#include <algorithm>
 
 
 void Solver::print_matrix(const vector<vector<int> > &mat) const
@@ -67,7 +68,7 @@ void Solver::calc_p(vector<vector<int>>& mat) //will also affect the b vector
         //bubble sorting
         for (unsigned int i = 0; i < (n - 1); i++)
           {
-            if (mat[ordered_indexes[i]][j] <= mat[ordered_indexes[i + 1]][j])
+            if (abs(mat[ordered_indexes[i]][j]) <= abs(mat[ordered_indexes[i + 1]][j]))
               {
                 int aux = ordered_indexes[i + 1];
                 ordered_indexes[i + 1] = ordered_indexes[i];
@@ -136,17 +137,94 @@ void Solver::print_float_mat(const vector<vector<float>>& float_mat) const
       }
   }
 
-
-vector<int> Solver::solve(vector<vector<int>>& mat)
+void Solver::permute_mat(vector<vector<int>>& mat) const //permutes with private matrix P
   {
-    vector<int> sol;
+    unsigned int n = P.size();
+    vector<vector<int>> copy_mat;
+    for (unsigned int i = 0; i < n; i++)
+      {
+        for (unsigned int j = 0; j < n; j++)
+          {
+            if (P[i][j] == 1)
+              {
+                copy_mat.push_back(mat[j]);
+                break;
+              }
+          }
+      }
+    mat = copy_mat;
+  }
+
+void Solver::permute_vec(vector<int>& vec)
+  {
+    unsigned int n = P.size();
+    vector<int> copy_vec = vec;
+    for (unsigned int i = 0; i < n; i++)
+      {
+        for (unsigned int j = 0; j < n; j++)
+          {
+            if (P[i][j] == 1)
+              {
+                copy_vec[i] = vec[j];
+                break;
+              }
+          }
+      }
+    vec = copy_vec;
+  }
+
+void Solver::calc_Y()
+  {
+    unsigned int i = 0, j = 0, n = this->L.size();
+    while (i < n)
+      {
+        float y_sol = 0;
+        float summation = 0;
+        for (unsigned int k = 0; k < i; k++)
+            summation += Y[k] * L[i][k];
+        y_sol = (float) (b[i] - summation) /  L[i][j];
+        Y.push_back(y_sol);
+        i++;
+        j++;
+      }
+  }
+
+void Solver::calc_X()
+  {
+    unsigned int n = this->U.size();
+    int j = n - 1, i = j;
+    while (i >= 0)
+      {
+        float X_sol = 0;
+        float summation = 0;
+        for (unsigned int k = n - 1; k > (unsigned) i; k--)
+            summation += U[i][k] * X[n - k - 1];
+        X_sol = (float) (Y[i] - summation) /  U[i][j];
+        X.push_back(X_sol);
+        i--;
+        j--;
+      }
+    reverse(X.begin(), X.end());
+  }
+
+vector<float> Solver::solve(vector<vector<int>>& mat, bool debug)
+  {
     determine_mat(mat);
-    cout << "Possible matrix with solution : " << endl;
-    print_matrix(mat);
-    cout << endl << "Vector b :" << endl;
-    print_vector(b);
-    cout << endl;
     calc_p(mat);
-    cout << "Permutation matrix : " << endl; print_matrix(P); cout << endl;
-    return sol;
+    permute_mat(mat);
+    permute_vec(b);
+    decompose(mat);
+    calc_Y();
+    calc_X();
+    if (debug)
+      {
+        cout << "Permutation matrix : " << endl; print_matrix(P); cout << endl;
+        cout << "Permuted A :" << endl; print_matrix(mat); cout << endl;
+        cout << "Permuted b :" << endl; print_vector(b); cout << endl;
+        cout << "L (permuted) :" << endl; print_float_mat(L); cout << endl;
+        cout << "U (permuted) :" << endl; print_float_mat(U); cout << endl;
+        cout << "Y :" << endl; print_vector_float(Y); cout << endl;
+        cout << "X :" << endl; print_vector_float(X); cout << endl;        
+      }
+    return X;
   }

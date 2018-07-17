@@ -80,10 +80,42 @@ void Equation::update_matrix()
       }
   }
 
-void Equation::normalize()
+void Equation::update_mol_coeff()
+  {
+    unsigned int lhm_size = lhm.size();
+    for (unsigned int i = 0; i < this->X.size(); i++)
+      {
+        if (i >= lhm_size)
+          rhm[i - lhm_size].setCoeff(X[i]);
+        else
+          lhm[i].setCoeff(X[i]);
+      }
+  }
+
+void Equation::print()
+  {
+    unsigned int n = lhm.size();
+    for (unsigned int i = 0; i < n; i++)
+      {
+        lhm[i].print();
+        if (i != n -1)
+          cout << " + ";
+      }
+    cout << " --> ";
+    n = rhm.size();
+    for (unsigned int i = 0; i < n; i++)
+      {
+        lhm[i].print();
+        if (i != n -1)
+          cout << " + ";
+      }
+  }
+
+void Equation::normalize(bool debug)
   {
     update_matrix();
     Solver solver;
     cout << endl;
-    solver.solve(coefficient_mat);
+    X = solver.solve(coefficient_mat, debug);
+    update_mol_coeff();
   }
